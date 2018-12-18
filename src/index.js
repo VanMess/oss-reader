@@ -20,7 +20,8 @@ program
 	.description('阿里云OSS内容读取工具，欢迎使用。')
 	.version(pkg.version);
 
-// list 命令
+// list objects from oss
+// help link: https://help.aliyun.com/document_detail/31947.html
 program.command('list <bucket>').alias('ls')
 	.description('列出特定bucket下的所有内容')
 	.option('-k, --id <id>', '通过阿里云控制台创建的access key')
@@ -41,6 +42,10 @@ program.command('list <bucket>').alias('ls')
 	});
 
 program.parse(process.argv);
+
+if (process.argv.length === 2) {
+	program.outputHelp();
+}
 
 // registe global error handler
 process.on('uncaughtException', (err) => {
