@@ -36,7 +36,7 @@ Options:
   -p, --prefix <string>    Optional. The prefix path of `Objects`, we would just fetch thing behind this path if provided.
   -m, --marker <marker>    Optional. Start point for fetching.
   -o, --outfile <outfile>  Optional. We would save the `Objects` list if provided.
-  -h, --help               output usage information
+  -h, --help               Output usage information
 ```
 
 ## TODO
