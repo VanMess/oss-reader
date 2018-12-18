@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import ossLister from '../lib/list';
 
 async function requireUntilProvided(message) {
-	const content = await prompt(`${chalk.red(message)}`);
+	const content = await prompt(`${chalk.green(message)}`);
 	if (!content) {
 		return requireUntilProvided(message);
 	}

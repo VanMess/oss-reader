@@ -23,16 +23,29 @@ function run(client, { prefix, marker, outfile }) {
 		reader.pipe(new OssObjectEscapeTransform()).pipe(ws);
 	}
 	reader.on('error', async (e) => {
-		reader.destroy();
-		console.log(`${chalk.gray('Fetching fail')}: ${chalk.red.bold(e.message)}.`);
-		const userInput = await prompt('Would like try it again?(yes/no)');
+		// Once some error occurs, we should interrupt the reader
+		// stream.
+		reader.unpipe();
+		const { message } = e;
+		let tip = '';
+		switch (true) {
+			// Sometimes the connection will broken before the
+			// tranformation is done cause by net risk.
+			case /Unclosed root tag/.test(e):
+				tip = 'Connection is broken before requst done.';
+				break;
+			default:
+				tip = `Fetching fail: ${message}`;
+		}
+		console.log(`${chalk.red(tip)}`);
+		const userInput = await prompt('Would like try it again?(yes/no)\n');
 		if (!userInput || userInput.toLowerCase() === 'yes') {
-			run(client, { prefix, marker, outfile });
+			const nextMarker = reader.$marker;
+			run(client, { prefix, marker: nextMarker, outfile });
 		} else {
 			exit();
 		}
 	});
-	return reader;
 }
 
 export default function(bucket, options) {
@@ -47,9 +60,9 @@ export default function(bucket, options) {
 			accessKeySecret: secret,
 			bucket
 		});
-		run(client, { prefix, marker, outfile });
 	} catch (e) {
 		console.log(`${chalk.gray('Connection fail')}: ${chalk.red.bold(e.message)}.`);
 		exit();
 	}
+	run(client, { prefix, marker, outfile });
 };

@@ -5,42 +5,51 @@ import prettysize from 'prettysize';
 
 export class OssBucketReadStream extends Readable {
 	constructor(client, { prefix = null, marker = null }) {
-		super();
+		super({ objectMode: true });
 		this.$marker = marker;
 		this.$prefix = prefix;
 		this.$client = client;
 	}
 
 	async _read() {
-		try {
-			const result = await this.$client.list({
-				prefix: this.$prefix,
-				marker: this.$marker
-			});
+		while (true) {
+			let result;
+			try {
+				result = await this.$client.list({
+					prefix: this.$prefix,
+					marker: this.$marker
+				});
+			} catch (e) {
+				this.destroy(e);
+				return;
+			}
 			const { objects, nextMarker } = result;
-			_.forEach(objects, rec => this.push(JSON.stringify(rec)));
+			// According to https://nodejs.org/api/stream.html#stream_readable_read_size_1,
+			// we stop once the `push` method return false value.
+			const sholdStop = _(objects)
+				.map(rec => this.push(rec))
+				.includes(false);
 			if (!nextMarker) {
 				this.push(null);
 			} else {
 				this.$marker = nextMarker;
 			}
-		} catch (e) {
-			this.emit('error', e);
+			if (sholdStop) {
+				return;
+			}
 		}
 	}
 }
 
 export class OssObjectTableTransform extends Transform {
 	constructor() {
-		super();
+		super({ objectMode: true });
 		this.$index = 0;
 	}
-	_transform(chunk, encoding, cb) {
-		if (_.isNil(chunk)) {
+	_transform(record, encoding, cb) {
+		if (_.isNil(record)) {
 			this.push(null);
 		}
-		const content = chunk.toString();
-		const record = JSON.parse(content);
 		cb();
 		this.push(`${++this.$index}.\t${chalk.bold.green(record.name)}\t${chalk.gray(prettysize(record.size))}\n`);
 	}
@@ -49,11 +58,11 @@ export class OssObjectTableTransform extends Transform {
 
 export class OssObjectEscapeTransform extends Transform {
 	constructor() {
-		super();
+		super({ objectMode: true });
 	}
 
-	_transform(chunk, encoding, cb) {
+	_transform(record, encoding, cb) {
 		cb();
-		this.push(`${chunk.toString()}\n`);
+		this.push(`${JSON.stringify(record)}\n`);
 	}
 }
