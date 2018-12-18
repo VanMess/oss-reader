@@ -56,7 +56,7 @@ function run(client, { prefix, marker, outfile }) {
 		counter++;
 	});
 	target.on('finish', () => {
-		console.log(`Done with ${chalk.green(counter)} objects.\n`);
+		console.log(`\nDone with ${chalk.green(counter)} objects.\n`);
 		exit(0);
 	});
 }
@@ -87,7 +87,7 @@ async function detectFileArg(file) {
 			return false;
 		} else if (stats.size > 0) {
 			// Alarm if is no empty.
-			const allowOverWrite = await prompt(`The "${file}" is not empty, and it would be overwrite if continue, are you sure?(yes/no)\n`);
+			const allowOverWrite = await prompt(`\nThe "${chalk.red(file)}" is not empty, and it would be overwrite if continue, are you sure?(yes/no)\n`);
 			if (!allowOverWrite || allowOverWrite.toLowerCase() === 'yes') {
 				return true;
 			} else {

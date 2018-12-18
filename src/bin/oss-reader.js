@@ -29,6 +29,7 @@ program.command('list <bucket>').alias('ls')
 			id = await requireUtilProvided('Please provide Aliyun Access ID:');
 		}
 		const secret = await requireUntilProvided('Please provide Aliyun Access Secret:');
+		console.log('\n');
 		ossLister(bucket, { id, secret, region, prefix, marker, outfile })
 	});
 
