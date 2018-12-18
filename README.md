@@ -27,7 +27,7 @@ The full options as this:
 ```bash
 Usage: list|ls [options] <bucket>
 
-Retrive the full `Objects` list from <bucket>. Arguments has the some meaning to https://help.aliyun.com/document_detail/31965.html?spm=a2c4g.11186623.6.1066.730f7b55pV4ySM .
+Retrive the full `Objects` list from <bucket>. Arguments has the some meaning to https://help.aliyun.com/document_detail/31965.html .
 
 Options:
   -k, --id <id>            The Access Key ID created by Aliyun.
