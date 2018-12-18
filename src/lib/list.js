@@ -15,12 +15,13 @@ const DEFAULT_OPTIONS = {
 
 function run(client, { prefix, marker, outfile }) {
 	const reader = new OssBucketReadStream(client, { marker, prefix });
-	reader.pipe(new OssObjectTableTransform()).pipe(process.stdout);
+	let target = process.stdout;
+	reader.pipe(new OssObjectTableTransform()).pipe(target);
 	// if was passed `outfile` arguments
 	// we shold write records to file
 	if (outfile) {
-		const ws = fs.createWriteStream(outfile);
-		reader.pipe(new OssObjectEscapeTransform()).pipe(ws);
+		target = fs.createWriteStream(outfile);
+		reader.pipe(new OssObjectEscapeTransform()).pipe(target);
 	}
 	reader.on('error', async (e) => {
 		// Once some error occurs, we should interrupt the reader
@@ -54,7 +55,7 @@ function run(client, { prefix, marker, outfile }) {
 	reader.on('data', () => {
 		counter++;
 	});
-	reader.on('end', () => {
+	target.on('finish', () => {
 		console.log(`Done with ${chalk.green(counter)} objects.`);
 		exit(0);
 	});

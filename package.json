@@ -3,7 +3,8 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"start": "npx babel-node index.js"
+		"build": "rimraf dist && cross-env NODE_ENV=production babel src -d dist -s",
+		"start": "node dist/bin/oss-reader.js"
 	},
 	"author": "wenjie",
 	"license": "ISC",

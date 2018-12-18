@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import { Readable, Transform } from 'stream';
-import chalk from 'chalk';
-import prettysize from 'prettysize';
+import _ from "lodash";
+import { Readable, Transform } from "stream";
+import chalk from "chalk";
+import prettysize from "prettysize";
 
 export class OssBucketReadStream extends Readable {
 	constructor(client, { prefix = null, marker = null }) {
@@ -56,26 +56,31 @@ export class OssBucketReadStream extends Readable {
 
 export class OssObjectTableTransform extends Transform {
 	constructor() {
-		super({ objectMode: true });
+		super({ objectMode: true, autoDestroy: true });
 		this.$index = 0;
 	}
 	_transform(record, encoding, cb) {
 		if (_.isNil(record)) {
 			this.push(null);
+			cb();
+			return;
 		}
+		this.push(
+			`${++this.$index}.\t${chalk.bold.green(record.name)}\t${chalk.gray(
+        prettysize(record.size)
+      )}\n`
+		);
 		cb();
-		this.push(`${++this.$index}.\t${chalk.bold.green(record.name)}\t${chalk.gray(prettysize(record.size))}\n`);
 	}
-
 }
 
 export class OssObjectEscapeTransform extends Transform {
 	constructor() {
-		super({ objectMode: true });
+		super({ objectMode: true, autoDestroy: true });
 	}
 
 	_transform(record, encoding, cb) {
-		cb();
 		this.push(`${JSON.stringify(record)}\n`);
+		cb();
 	}
 }
