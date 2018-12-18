@@ -56,18 +56,54 @@ function run(client, { prefix, marker, outfile }) {
 		counter++;
 	});
 	target.on('finish', () => {
-		console.log(`Done with ${chalk.green(counter)} objects.`);
+		console.log(`Done with ${chalk.green(counter)} objects.\n`);
 		exit(0);
 	});
 }
 
-export default function(bucket, options) {
-	const config = _.merge({}, DEFAULT_OPTIONS, options);
-	const { id, secret, region, prefix, marker, outfile } = config;
-
-	let client;
+async function detectFileArg(file) {
+	// If outfile is't be indicated,
+	// just print things to console.
+	if (_.isNil(file)) {
+		return true;
+	}
+	// In case white char sequence like ' '.
+	if (_.isString(file) && /^\s?$/.test(file)) {
+		console.log(`${chalk.red('The "outfile" argument should not be empty.')}`);
+		return false;
+	}
 	try {
-		client = new Oss({
+		const stats = await (() => new Promise((resolve, reject) => {
+			fs.stat(file, (err, stats) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(stats);
+			});
+		}))();
+		if (stats.isDirectory()) {
+			console.log(`${chalk.red(`"${file}" should not be a directionary.`)}`);
+			return false;
+		} else if (stats.size > 0) {
+			// Alarm if is no empty.
+			const allowOverWrite = await prompt(`The "${file}" is not empty, and it would be overwrite if continue, are you sure?(yes/no)\n`);
+			if (!allowOverWrite || allowOverWrite.toLowerCase() === 'yes') {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return true;
+	} catch (e) {
+		console.log(`${chalk.red(e.message)}`);
+		return false;
+	}
+}
+
+function createOssClient(bucket, { id, secret, region }) {
+	try {
+		return new Oss({
 			region,
 			accessKeyId: id,
 			accessKeySecret: secret,
@@ -77,5 +113,16 @@ export default function(bucket, options) {
 		console.log(`${chalk.gray('Connection fail')}: ${chalk.red.bold(e.message)}.`);
 		exit(1);
 	}
-	run(client, { prefix, marker, outfile });
+}
+
+export default async function(bucket, options) {
+	const config = _.merge({}, DEFAULT_OPTIONS, options);
+	const { id, secret, region, prefix, marker, outfile } = config;
+	const isFileValid = await detectFileArg(outfile);
+	if (isFileValid) {
+		const client = createOssClient(bucket, { id, secret, region });
+		run(client, { prefix, marker, outfile });
+	} else {
+		exit(1);
+	}
 };
