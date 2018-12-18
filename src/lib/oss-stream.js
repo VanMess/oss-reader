@@ -9,33 +9,46 @@ export class OssBucketReadStream extends Readable {
 		this.$marker = marker;
 		this.$prefix = prefix;
 		this.$client = client;
+		this.$reading = false;
+	}
+
+	get marker() {
+		return this.$marker;
 	}
 
 	async _read() {
+		// should fetch data one by one.
+		if (this.$reading) {
+			return;
+		}
 		while (true) {
-			let result;
 			try {
-				result = await this.$client.list({
+				this.$reading = true;
+				const result = await this.$client.list({
 					prefix: this.$prefix,
 					marker: this.$marker
 				});
+				const { objects, nextMarker } = result;
+				// According to https://nodejs.org/api/stream.html#stream_readable_read_size_1,
+				// we stop once the `push` method return false value.
+				const sholdStop = _(objects)
+					.map(rec => this.push(rec))
+					.includes(false);
+				// OSS will return empty `nextMarker`
+				// while there is nothing behind.
+				if (!nextMarker) {
+					this.push(null);
+					break;
+				} else {
+					this.$marker = nextMarker;
+				}
+				if (sholdStop) {
+					break;
+				}
 			} catch (e) {
 				this.destroy(e);
-				return;
-			}
-			const { objects, nextMarker } = result;
-			// According to https://nodejs.org/api/stream.html#stream_readable_read_size_1,
-			// we stop once the `push` method return false value.
-			const sholdStop = _(objects)
-				.map(rec => this.push(rec))
-				.includes(false);
-			if (!nextMarker) {
-				this.push(null);
-			} else {
-				this.$marker = nextMarker;
-			}
-			if (sholdStop) {
-				return;
+			} finally {
+				this.$reading = false;
 			}
 		}
 	}

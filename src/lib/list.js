@@ -37,10 +37,13 @@ function run(client, { prefix, marker, outfile }) {
 			default:
 				tip = `Fetching fail: ${message}`;
 		}
+		if (process.env.NODE_ENV === 'development') {
+			tip = `${tip}\n ${e.stack}`;
+		}
 		console.log(`${chalk.red(tip)}`);
 		const userInput = await prompt('Would like try it again?(yes/no)\n');
 		if (!userInput || userInput.toLowerCase() === 'yes') {
-			const nextMarker = reader.$marker;
+			const nextMarker = reader.marker;
 			run(client, { prefix, marker: nextMarker, outfile });
 		} else {
 			exit();

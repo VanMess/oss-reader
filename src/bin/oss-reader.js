@@ -4,6 +4,8 @@ import prompt from 'prompt-promise';
 import chalk from 'chalk';
 import ossLister from '../lib/list';
 
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
 async function requireUntilProvided(message) {
 	const content = await prompt(`${chalk.green(message)}`);
 	if (!content) {
