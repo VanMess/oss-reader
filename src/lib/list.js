@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import chalk from 'chalk';
 import prompt from 'prompt-promise';
-import { exit } from './util';
+import { exit, detectFileWritable, error } from './util';
 import { OssBucketReadStream, OssObjectTableTransform, OssObjectEscapeTransform } from './oss-stream';
 
 const DEFAULT_OPTIONS = {
@@ -28,20 +28,18 @@ function run(client, { prefix, marker, outfile }) {
 		// stream.
 		reader.unpipe();
 		const { message } = e;
-		let tip = '';
+		let error;
 		switch (true) {
 			// Sometimes the connection will broken before the
 			// tranformation is done cause by net risk.
 			case /Unclosed root tag/.test(e):
-				tip = 'Connection is broken before requst done.';
+				error = new Error('Connection is broken before requst done.');
 				break;
 			default:
-				tip = `Fetching fail: ${message}`;
+				error = new Error(`Fetching fail: ${message}`);
+				break;
 		}
-		if (process.env.NODE_ENV === 'development') {
-			tip = `${tip}\n ${e.stack}`;
-		}
-		console.log(`${chalk.red(tip)}`);
+		error(error);
 		const userInput = await prompt('Would like try it again?(yes/no)\n');
 		if (!userInput || userInput.toLowerCase() === 'yes') {
 			const nextMarker = reader.marker;
@@ -69,36 +67,10 @@ async function detectFileArg(file) {
 	}
 	// In case white char sequence like ' '.
 	if (_.isString(file) && /^\s?$/.test(file)) {
-		console.log(`${chalk.red('The "outfile" argument should not be empty.')}`);
+		error('The "outfile" argument should not be empty.');
 		return false;
 	}
-	try {
-		const stats = await (() => new Promise((resolve, reject) => {
-			fs.stat(file, (err, stats) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				resolve(stats);
-			});
-		}))();
-		if (stats.isDirectory()) {
-			console.log(`${chalk.red(`"${file}" should not be a directionary.`)}`);
-			return false;
-		} else if (stats.size > 0) {
-			// Alarm if is no empty.
-			const allowOverWrite = await prompt(`\nThe "${chalk.red(file)}" is not empty, and it would be overwrite if continue, are you sure?(yes/no)\n`);
-			if (!allowOverWrite || allowOverWrite.toLowerCase() === 'yes') {
-				return true;
-			} else {
-				return false;
-			}
-		}
-		return true;
-	} catch (e) {
-		console.log(`${chalk.red(e.message)}`);
-		return false;
-	}
+	return detectFileWritable(file);
 }
 
 function createOssClient(bucket, { id, secret, region }) {
@@ -110,7 +82,7 @@ function createOssClient(bucket, { id, secret, region }) {
 			bucket
 		});
 	} catch (e) {
-		console.log(`${chalk.gray('Connection fail')}: ${chalk.red.bold(e.message)}.`);
+		error(new Error(`${chalk.gray('Connection fail')}: ${chalk.red.bold(e.message)}.`));
 		exit(1);
 	}
 }
