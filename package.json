@@ -3,11 +3,13 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"build": "rimraf dist && cross-env NODE_ENV=production babel src -d dist -s",
-		"start": "node dist/bin/oss-reader.js"
+		"build": "rimraf dist && cross-env NODE_ENV=production babel src -d dist -s"
+	},
+	"bin": {
+		"oss-reader": "./bin/index.js"
 	},
 	"author": "wenjie",
-	"license": "ISC",
+	"license": "MIT",
 	"dependencies": {
 		"ali-oss": "^6.0.2",
 		"commander": "^2.19.0",
