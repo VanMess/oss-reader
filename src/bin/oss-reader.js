@@ -3,6 +3,7 @@ import program from 'commander';
 import prompt from 'prompt-promise';
 import chalk from 'chalk';
 import ossLister from '../lib/list';
+import { error } from '../lib/util';
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -34,3 +35,8 @@ program.command('list <bucket>').alias('ls')
 	});
 
 program.parse(process.argv);
+
+// registe global error handler
+process.on('uncaughtException', (err) => {
+	error(err);
+});

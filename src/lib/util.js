@@ -32,8 +32,8 @@ async function detectDirIsExist(file) {
 export async function detectFileWritable(file) {
 	try {
 		const stats = await stat(file);
-		if (stats.isDirectory()) {
-			console.log(`${chalk.red(`"${file}" should not be a directionary.`)}`);
+		if (stats.isFile() === false) {
+			console.log(`${chalk.red(`"${file}" should be a file!`)}`);
 			return false;
 		} else if (stats.size > 0) {
 			// Alarm if is no empty.
