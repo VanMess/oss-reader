@@ -1,7 +1,16 @@
 import _ from 'lodash';
 import program from 'commander';
 import prompt from 'prompt-promise';
+import chalk from 'chalk';
 import ossLister from '../lib/list';
+
+async function requireUntilProvided(message) {
+	const content = await prompt(`${chalk.red(message)}`);
+	if (!content) {
+		return requireUntilProvided(message);
+	}
+	return content;
+}
 
 // list 命令
 program.command('list <bucket>').alias('ls')
@@ -15,9 +24,9 @@ program.command('list <bucket>').alias('ls')
 		let { id } = options;
 		const { region, prefix, marker, outfile } = options;
 		if (_.isNil(id)) {
-			id = await prompt('请输入 Access Key:');
+			id = await requireUtilProvided('Please provide Aliyun Access ID:');
 		}
-		const secret = await prompt('请输入 Access Secret:');
+		const secret = await requireUntilProvided('Please provide Aliyun Access Secret:');
 		ossLister(bucket, { id, secret, region, prefix, marker, outfile })
 	});
 

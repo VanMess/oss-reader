@@ -11,6 +11,7 @@
 		"ali-oss": "^6.0.2",
 		"commander": "^2.19.0",
 		"lodash": "^4.17.11",
+		"prettysize": "^2.0.0",
 		"prompt-promise": "^1.0.3"
 	},
 	"devDependencies": {

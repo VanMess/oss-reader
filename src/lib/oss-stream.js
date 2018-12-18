@@ -12,16 +12,20 @@ export class OssBucketReadStream extends Readable {
 	}
 
 	async _read() {
-		const result = await this.$client.list({
-			prefix: this.$prefix,
-			marker: this.$marker
-		});
-		const { objects, nextMarker } = result;
-		_.forEach(objects, rec => this.push(JSON.stringify(rec)));
-		if (!nextMarker) {
-			this.push(null);
-		} else {
-			this.$marker = nextMarker;
+		try {
+			const result = await this.$client.list({
+				prefix: this.$prefix,
+				marker: this.$marker
+			});
+			const { objects, nextMarker } = result;
+			_.forEach(objects, rec => this.push(JSON.stringify(rec)));
+			if (!nextMarker) {
+				this.push(null);
+			} else {
+				this.$marker = nextMarker;
+			}
+		} catch (e) {
+			this.emit('error', e);
 		}
 	}
 }
