@@ -23,13 +23,13 @@ program
 // list objects from oss
 // help link: https://help.aliyun.com/document_detail/31947.html
 program.command('list <bucket>').alias('ls')
-	.description('列出特定bucket下的所有内容')
-	.option('-k, --id <id>', '通过阿里云控制台创建的access key')
-	.option('-s, --secret <string>', '通过阿里云控制台创建的access secret')
-	.option('-r, --region <string>', '可选，bucket 所在的区域, 默认 oss-cn-hangzhou')
-	.option('-p, --prefix <string>', '可选，限定返回的object key必须以prefix作为前缀。注意使用prefix查询时，返回的key中仍会包含prefix。')
-	.option('-m, --marker <marker>', '可选，设定结果从marker之后按字母排序的第一个开始返回。')
-	.option('-o, --outfile <outfile>', '可选，将结果保存到此文件')
+	.description('Retrive the full `Objects` list from <bucket>. Arguments has the some meaning to https://help.aliyun.com/document_detail/31965.html?spm=a2c4g.11186623.6.1066.730f7b55pV4ySM .')
+	.option('-k, --id <id>', 'The Access Key ID created by Aliyun.')
+	.option('-s, --secret <string>', 'The Access Key Secret created by Aliyun.')
+	.option('-r, --region <string>', 'Optional. The region of bucket, default to "oss-cn-hangzhou".')
+	.option('-p, --prefix <string>', 'Optional. The prefix path of `Objects`, we would just fetch thing behind this path if provided.')
+	.option('-m, --marker <marker>', 'Optional. Start point for fetching.')
+	.option('-o, --outfile <outfile>', 'Optional. We would save the `Objects` list if provided.')
 	.action(async (bucket, options) => {
 		let { id } = options;
 		const { region, prefix, marker, outfile } = options;
