@@ -1,7 +1,7 @@
 {
 	"name": "oss-reader",
-	"version": "1.0.2",
-	"description": "OSS-Reader is a CLI tool for reading contents from OSS bucket",
+	"version": "1.0.3",
+	"description": "OSS-Reader is a CLI tool for reading contents from OSS bucket.",
 	"scripts": {
 		"build": "rimraf dist && cross-env NODE_ENV=production babel src -d dist -s"
 	},
@@ -9,7 +9,7 @@
 		"oss-reader": "./bin/index.js"
 	},
 	"repository": "https://github.com/VanMess/oss-reader",
-	"keyword": [
+	"keywords": [
 		"OSS",
 		"util",
 		"OSS reader"
