@@ -2,6 +2,7 @@ import _ from 'lodash';
 import program from 'commander';
 import prompt from 'prompt-promise';
 import chalk from 'chalk';
+import pkg from '../package.json';
 import ossLister from './lib/list';
 import { error } from './lib/util';
 
@@ -15,8 +16,13 @@ async function requireUntilProvided(message) {
 	return content;
 }
 
+program
+	.description('阿里云OSS内容读取工具，欢迎使用。')
+	.version(pkg.version);
+
 // list 命令
 program.command('list <bucket>').alias('ls')
+	.description('列出特定bucket下的所有内容')
 	.option('-k, --id <id>', '通过阿里云控制台创建的access key')
 	.option('-s, --secret <string>', '通过阿里云控制台创建的access secret')
 	.option('-r, --region <string>', '可选，bucket 所在的区域, 默认 oss-cn-hangzhou')
