@@ -46,8 +46,17 @@ function run(client, { prefix, marker, outfile }) {
 			const nextMarker = reader.marker;
 			run(client, { prefix, marker: nextMarker, outfile });
 		} else {
-			exit();
+			exit(1);
 		}
+	});
+
+	let counter = 0;
+	reader.on('data', () => {
+		counter++;
+	});
+	reader.on('end', () => {
+		console.log(`Done with ${chalk.green(counter)} objects.`);
+		exit(0);
 	});
 }
 
@@ -65,7 +74,7 @@ export default function(bucket, options) {
 		});
 	} catch (e) {
 		console.log(`${chalk.gray('Connection fail')}: ${chalk.red.bold(e.message)}.`);
-		exit();
+		exit(1);
 	}
 	run(client, { prefix, marker, outfile });
 };
